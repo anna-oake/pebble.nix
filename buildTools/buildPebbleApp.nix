@@ -32,7 +32,7 @@ let
   };
 
   nodeEnv = (pkgs.callPackage ./nodeEnv { }).nodeDependencies;
-  pythonEnv = pkgs.python2.withPackages (
+  pythonEnv = pkgs.python3.withPackages (
     ps: with python-libs; [
       ps.freetype-py
       sh
@@ -40,9 +40,11 @@ let
     ]
   );
 
-  pebble-sdk = pkgs.fetchzip {
-    url = "https://binaries.rebble.io/sdk-core/release/sdk-core-4.3.tar.bz2";
-    sha256 = "0p6x76rq5v9rb3j2fjdz1s2553n1yf5v2yhzxxp7g5220hmsk40j";
+  sdkVersion = "4.9.77";
+
+  pebble-sdk = fetchTarball {
+    url = "https://sdk.core.store/releases/${sdkVersion}/sdk-core.tar.gz";
+    sha256 = "0l1gxd9aian6xbpgx64px7pps3215sn1jamav9hjmd86civws2q4";
   };
 
   stringNotEmpty = str: builtins.isString str && str != "";
@@ -142,22 +144,33 @@ pkgsCross.gccStdenv.mkDerivation (
       pebble-tool
       pkgs.nodejs
       pythonEnv
-    ] ++ nativeBuildInputs;
+    ]
+    ++ nativeBuildInputs;
 
-    postUnpack =
-      ''
-        # Setup Pebble SDK
-        export HOME=`pwd`/home-dir
-        SDK_ROOT=$HOME/.pebble-sdk/SDKs/4.3
-        mkdir -p $SDK_ROOT/sdk-core
-        cp -r ${pebble-sdk}/* $SDK_ROOT/sdk-core
-        ln -s $SDK_ROOT $SDK_ROOT/../current
-        ln -s ${pythonEnv} $SDK_ROOT/.env
-        ln -s ${nodeEnv}/lib/node_modules $SDK_ROOT/node_modules
+    postUnpack = ''
+      # Setup Pebble SDK
+      export HOME=`pwd`/home-dir
+      SDK_VER="${sdkVersion}"
 
-        chmod -R u+w $HOME
-      ''
-      + postUnpack;
+      # canonical location (Linux-style)
+      PERSIST="$HOME/.pebble-sdk"
+      SDK_ROOT="$PERSIST/SDKs/$SDK_VER"
+
+      mkdir -p "$SDK_ROOT/sdk-core"
+      cp -r ${pebble-sdk}/sdk-core "$SDK_ROOT/"
+
+      ln -sfn ${pythonEnv} "$SDK_ROOT/.venv"
+      ln -sfn ${nodeEnv}/lib/node_modules "$SDK_ROOT/node_modules"
+
+      ln -sfn "$SDK_ROOT" "$PERSIST/SDKs/current"
+
+      # Darwin
+      mkdir -p "$HOME/Library/Application Support"
+      ln -sfn "$PERSIST" "$HOME/Library/Application Support/Pebble SDK"
+
+      chmod -R u+w "$HOME"
+    ''
+    + postUnpack;
 
     CFLAGS =
       "-Wno-error=builtin-macro-redefined -Wno-error=builtin-declaration-mismatch -include sys/types.h "
