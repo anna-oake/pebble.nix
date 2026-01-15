@@ -15,10 +15,23 @@
   SDL2,
   zlib,
   apple-sdk_15,
+  xorg,
 }:
 
 let
   darwinDeps = lib.optional stdenv.isDarwin apple-sdk_15;
+  x11Deps = lib.optionals stdenv.isLinux (
+    with xorg;
+    [
+      libX11
+      libXext
+      libXi
+      libXrandr
+      libXcursor
+      libXinerama
+      libXfixes
+    ]
+  );
 in
 stdenv.mkDerivation {
   name = "pebble-qemu";
@@ -49,6 +62,7 @@ stdenv.mkDerivation {
     SDL2
     zlib
   ]
+  ++ x11Deps
   ++ darwinDeps;
 
   configureFlags = [
