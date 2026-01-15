@@ -27,8 +27,8 @@
       let
         config = {
           permittedInsecurePackages = [
-            "python-2.7.18.8"
-            "python-2.7.18.8-env"
+            "python-2.7.18.12"
+            "python-2.7.18.12-env"
           ];
         };
         pkgs = import nixpkgs {

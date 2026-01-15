@@ -34,7 +34,7 @@ let
           ({
             x86_64-linux = "sha256-wkqkIVxk231n/GxCwNdzHKvPMAWWv5yCaudPQm/jt3E=";
             x86_64-darwin = "sha256-/CuVa/ryNTHEkIRe232A/JmP6K7hx88TNzF9rgEWkwc=";
-            aarch64-darwin = "sha256-bcQLZWzqf+VB9r262DtrTtUeXq2YW1TBOTGacxJTpV4=";
+            aarch64-darwin = "sha256-bLXodRruJIfMO18h6sbUWQQacYCneZQbZNtXNuJydu4=";
           }).${stdenv.hostPlatform.system};
       };
 
@@ -43,7 +43,8 @@ let
     nativeBuildInputs = [
       python3Packages.pypaInstallHook
       python3Packages.wheelUnpackHook
-    ] ++ (lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook);
+    ]
+    ++ (lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook);
 
     buildInputs = [ zlib ];
   };
@@ -58,6 +59,12 @@ let
       tag = "v${version}";
       hash = "sha256-D058c3o+2rTMQJpgwvFKd5Qwt2j7u4+GFpQHjO7lOVQ=";
     };
+
+    format = "pyproject";
+
+    build-system = with python3Packages; [
+      setuptools
+    ];
   };
 in
 python3Packages.buildPythonPackage rec {
@@ -71,6 +78,12 @@ python3Packages.buildPythonPackage rec {
     hash = "sha256-0A5jDO+9l3tWQBaNU7hk6PYKNyIiGwF7Ik7jMjS06kA=";
   };
 
+  format = "pyproject";
+
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
   nativeBuildInputs = [ makeWrapper ];
 
   propagatedBuildInputs = with python3Packages; [
@@ -82,12 +95,14 @@ python3Packages.buildPythonPackage rec {
     pygeoip
     pypng
     stpyv8
-    dateutil
+    python-dateutil
     requests
     sh
     six
-    websocket_client
+    websocket-client
   ];
+
+  dontCheckRuntimeDeps = true;
 
   postFixup = ''
     wrapProgram $out/bin/pypkjs \

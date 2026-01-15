@@ -25,34 +25,46 @@ let
       tag = version;
       hash = "sha256-xVVBtwYPAsScYitINnKhj3XOgapXzQnXvmuF0B4Kuac=";
     };
+
+    format = "pyproject";
+
+    build-system = with python3Packages; [
+      setuptools
+    ];
   };
 
   libpebble2 = python3Packages.buildPythonPackage {
     pname = "libpebble2";
-    version = "0.0.28";
+    version = "0.0.30";
     src = fetchFromGitHub {
       owner = "pebble-dev";
       repo = "libpebble2";
-      rev = "575fe2cfae39e1a1c61937d4e90628a3d5790a4d";
-      hash = "sha256-bQNeJoiQhg/twMcYpgvBOG/mutm3Fuf9iwF0y5UgWs0=";
+      rev = "6d0e8cffca29eb2ed4a876ea87c50df9c31ad3e7";
+      hash = "sha256-jzN3bMp7hCCFP6wQ4woXTgOmehczvn7cLqen9TlG7Dc=";
     };
 
     propagatedBuildInputs = with python3Packages; [
       pyserial
       six
-      websocket_client
+      websocket-client
+    ];
+
+    format = "pyproject";
+
+    build-system = with python3Packages; [
+      setuptools
     ];
   };
 in
 python3Packages.buildPythonPackage rec {
   pname = "pebble-tool";
-  version = "5.0.5";
+  version = "5.0.21";
 
   src = fetchFromGitHub {
     owner = "coredevices";
     repo = "pebble-tool";
     tag = "v${version}";
-    hash = "sha256-z0sZGQoMZLVYUP1ZC40TfuSj0P0QE0i/V1Jy+lM2sA4=";
+    hash = "sha256-hF4G6NUXZtWG8qZ10pMd4QeIvqCjmxFcuH4a3xR1NrQ=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -79,8 +91,14 @@ python3Packages.buildPythonPackage rec {
     websocket-client
     wheel
 
-    freetype
+    freetype-py
+    websockify
+    cobs
   ];
+
+  postPatch = ''
+    substituteInPlace pyproject.toml --replace "rsa>=4.9.1" "rsa>=4.9"
+  '';
 
   postFixup = ''
     wrapProgram $out/bin/pebble \
@@ -88,6 +106,12 @@ python3Packages.buildPythonPackage rec {
       --prefix LD_LIBRARY_PATH : ${rpath} \
       --prefix DYLD_LIBRARY_PATH : ${rpath}
   '';
+
+  format = "pyproject";
+
+  build-system = with python3Packages; [
+    hatchling
+  ];
 
   meta = with lib; {
     homepage = "https://developer.rebble.io/developer.pebble.com/index.html";
