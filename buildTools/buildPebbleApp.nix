@@ -7,6 +7,7 @@
 
 {
   name,
+  version,
   src,
   nativeBuildInputs ? [ ],
   postUnpack ? "",
@@ -134,8 +135,8 @@ let
 in
 pkgsCross.gccStdenv.mkDerivation (
   {
-    name = builtins.replaceStrings [ " " ] [ "-" ] name;
-    version = "1";
+    pname = builtins.replaceStrings [ " " ] [ "-" ] name;
+    inherit version;
 
     inherit src;
 
