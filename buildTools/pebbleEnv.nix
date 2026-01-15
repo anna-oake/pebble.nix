@@ -1,7 +1,6 @@
 {
   mkShell,
   lib,
-  coredevices,
   nodejs,
   pebble-qemu,
   pebble-tool,
@@ -15,7 +14,6 @@
   nativeBuildInputs ? [ ],
   packages ? [ ],
   CFLAGS ? "",
-  withCoreDevices ? false,
   ...
 }@attrs:
 
@@ -29,21 +27,18 @@ let
     "packages"
     "CFLAGS"
   ];
-
-  pebbleToolPackage = if withCoreDevices then coredevices.pebble-tool else pebble-tool;
 in
 mkShell (
   {
     name = "pebble-env";
-    packages =
-      [
-        nodejs
-        pebble-qemu
-        pebbleToolPackage
-        pebble-toolchain-bin
-      ]
-      ++ packages
-      ++ nativeBuildInputs;
+    packages = [
+      nodejs
+      pebble-qemu
+      pebble-tool
+      pebble-toolchain-bin
+    ]
+    ++ packages
+    ++ nativeBuildInputs;
 
     env = {
       inherit CFLAGS;

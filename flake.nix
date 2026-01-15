@@ -41,15 +41,13 @@
 
         buildPebbleApp = import ./buildTools/buildPebbleApp.nix {
           inherit pkgs nixpkgs system;
-          pebble-tool = packages.coredevices.pebble-tool;
-          python-libs = pkgs.callPackage ./derivations/pebble-tool/python-libs.nix { };
+          pebble-tool = packages.pebble-tool;
 
         };
         packages = {
           inherit (pkgs)
             arm-embedded-toolchain
             boost153
-            coredevices
             pdc-sequencer
             pdc_tool
             pebble-qemu
@@ -88,13 +86,7 @@
         pebble-qemu = final.callPackage ./derivations/pebble-qemu { };
         pebble-tool = final.callPackage ./derivations/pebble-tool { };
         pebble-toolchain-bin = final.callPackage ./derivations/pebble-toolchain-bin.nix { };
-        pypkjs = final.pebble-tool.passthru.pythonLibs.pypkjs;
-        pyv8 = final.callPackage ./derivations/pyv8 { };
-
-        coredevices = {
-          pypkjs = final.callPackage ./derivations/coredevices/pypkjs.nix { };
-          pebble-tool = final.callPackage ./derivations/coredevices/pebble-tool.nix { };
-        };
+        pypkjs = final.callPackage ./derivations/pebble-tool/pypkjs.nix { };
       };
 
       templates = rec {

@@ -2,7 +2,6 @@
   pkgs,
   nixpkgs,
   pebble-tool,
-  python-libs,
   system,
 }:
 
@@ -33,8 +32,8 @@ let
 
   nodeEnv = (pkgs.callPackage ./nodeEnv { }).nodeDependencies;
   pythonEnv = pkgs.python3.withPackages (
-    ps: with python-libs; [
-      ps.freetype-py
+    ps: with ps; [
+      freetype-py
       sh
       pypng
     ]
