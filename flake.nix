@@ -5,17 +5,11 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     flake-utils.url = "github:numtide/flake-utils";
-
-    commit-hooks = {
-      url = "github:cachix/git-hooks.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
     {
       self,
-      commit-hooks,
       flake-utils,
       nixpkgs,
       ...
@@ -64,14 +58,6 @@
           ];
 
           inherit (self.checks.${system}.pre-commit) shellHook;
-        };
-
-        checks.pre-commit = commit-hooks.lib.${system}.run {
-          src = ./.;
-          hooks = {
-            nixfmt-rfc-style.enable = true;
-            nil.enable = true;
-          };
         };
       }
     )
