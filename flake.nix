@@ -39,26 +39,16 @@
         packages = {
           inherit (pkgs)
             arm-embedded-toolchain
-            boost153
             pdc-sequencer
             pdc_tool
             pebble-qemu
             pebble-tool
             pebble-toolchain-bin
             pypkjs
-            pyv8
             ;
         };
 
-        devShell = pkgs.mkShell {
-          name = "pebble.nix-devshell";
-          packages = with pkgs; [
-            nil
-            nixfmt-rfc-style
-          ];
-
-          inherit (self.checks.${system}.pre-commit) shellHook;
-        };
+        checks = removeAttrs packages [ "arm-embedded-toolchain" ];
       }
     )
     // {
