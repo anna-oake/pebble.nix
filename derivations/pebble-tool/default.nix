@@ -98,6 +98,10 @@ python3Packages.buildPythonPackage rec {
 
   postPatch = ''
     substituteInPlace pyproject.toml --replace "rsa>=4.9.1" "rsa>=4.9"
+
+    substituteInPlace pebble_tool/sdk/__init__.py \
+      --replace 'tmp_link = "/var/tmp/pebble-sdk"' \
+                'tmp_link = os.environ.get("PEBBLE_SDK_TMP_LINK", "/var/tmp/pebble-sdk")'
   '';
 
   postFixup = ''

@@ -169,6 +169,10 @@ pkgsCross.gccStdenv.mkDerivation (
       ln -sfn "$PERSIST" "$HOME/Library/Application Support/Pebble SDK"
 
       chmod -R u+w "$HOME"
+
+      export TMPDIR="$PWD/tmp"
+      mkdir -p "$TMPDIR"
+      export PEBBLE_SDK_TMP_LINK="$TMPDIR/pebble-sdk"
     ''
     + postUnpack;
 
