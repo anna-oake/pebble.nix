@@ -5,7 +5,6 @@
   autoconf,
   automake,
   bison,
-  darwin,
   flex,
   glib,
   libtool,
@@ -15,29 +14,21 @@
   python2,
   SDL2,
   zlib,
+  apple-sdk_15,
 }:
 
 let
-  darwinDeps = lib.optionals stdenv.isDarwin (
-    with darwin.apple_sdk.frameworks;
-    with darwin.stubs;
-    [
-      CoreAudio
-      IOKit
-      rez
-      setfile
-    ]
-  );
+  darwinDeps = lib.optional stdenv.isDarwin apple-sdk_15;
 in
 stdenv.mkDerivation {
   name = "pebble-qemu";
-  version = "2.5.0-pebble6";
+  version = "2.5.0-pebble8";
 
   src = fetchFromGitHub {
-    owner = "pebble-dev";
+    owner = "coredevices";
     repo = "qemu";
-    rev = "615110afaf9fd48435263a340e0ceccfe2d52997";
-    hash = "sha256-tblgseY4g/5Hyor3dvGILGw5ECgtfDoyjkRcQrTVr24=";
+    rev = "a0da0db291d92d491b4883cec01ba8f088ef5b3b";
+    hash = "sha256-DVep6uwHw/1oyzHLYmWQPu6taD2bRkmcq/pA6PsY2Fc=";
     fetchSubmodules = true;
   };
 
@@ -57,7 +48,8 @@ stdenv.mkDerivation {
     pixman
     SDL2
     zlib
-  ] ++ darwinDeps;
+  ]
+  ++ darwinDeps;
 
   configureFlags = [
     "--with-coroutine=gthread"
@@ -76,6 +68,10 @@ stdenv.mkDerivation {
   postInstall = ''
     mv $out/bin/qemu-system-arm $out/bin/qemu-pebble
   '';
+
+  patches = [
+    ./skip-macos-icon.patch
+  ];
 
   meta = with lib; {
     homepage = "https://github.com/pebble/qemu";

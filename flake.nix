@@ -85,7 +85,7 @@
         boost153 = final.callPackage ./derivations/boost153 { };
         pdc-sequencer = final.callPackage ./derivations/pdc-sequencer.nix { };
         pdc_tool = final.callPackage ./derivations/pdc_tool.nix { };
-        pebble-qemu = final.callPackage ./derivations/pebble-qemu.nix { };
+        pebble-qemu = final.callPackage ./derivations/pebble-qemu { };
         pebble-tool = final.callPackage ./derivations/pebble-tool { };
         pebble-toolchain-bin = final.callPackage ./derivations/pebble-toolchain-bin.nix { };
         pypkjs = final.pebble-tool.passthru.pythonLibs.pypkjs;
