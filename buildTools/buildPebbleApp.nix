@@ -142,8 +142,9 @@ pkgsCross.gccStdenv.mkDerivation (
 
     nativeBuildInputs = [
       pebble-tool
-      pkgs.nodejs
       pythonEnv
+      pkgs.nodejs
+      pkgs.strip-nondeterminism
     ]
     ++ nativeBuildInputs;
 
@@ -173,12 +174,28 @@ pkgsCross.gccStdenv.mkDerivation (
       export TMPDIR="$PWD/tmp"
       mkdir -p "$TMPDIR"
       export PEBBLE_SDK_TMP_LINK="$TMPDIR/pebble-sdk"
+
+      TIMESTAMP=0
+
+      substituteInPlace "$SDK_ROOT/sdk-core/pebble/common/tools/inject_metadata.py" \
+        --replace-fail "'timestamp' : timestamp," "'timestamp' : $TIMESTAMP," \
+        --replace-fail "RESOURCE_TIMESTAMP_ADDR, '<L', timestamp)" "RESOURCE_TIMESTAMP_ADDR, '<L', $TIMESTAMP)"
+
+      substituteInPlace "$SDK_ROOT/sdk-core/pebble/common/tools/mkbundle.py" \
+        --replace-fail "generated_at = int(time.time())" "generated_at = $TIMESTAMP" \
+        --replace-fail "socket.gethostname()" "'nix'" \
+        --replace-fail "'timestamp' : firmware_timestamp" "'timestamp' : $TIMESTAMP" \
+        --replace-fail "'timestamp' : resources_timestamp" "'timestamp' : $TIMESTAMP" \
+        --replace-fail "'timestamp': app_timestamp" "'timestamp': $TIMESTAMP" \
+        --replace-fail "'timestamp': worker_timestamp" "'timestamp': $TIMESTAMP"
     ''
     + postUnpack;
 
     CFLAGS =
       "-Wno-error=builtin-macro-redefined -Wno-error=builtin-declaration-mismatch -include sys/types.h "
       + CFLAGS;
+
+    LDFLAGS = "-Wl,--build-id=none";
 
     buildPhase = ''
       pebble clean
@@ -199,6 +216,7 @@ pkgsCross.gccStdenv.mkDerivation (
 
         cp ${metaYaml} $out/meta.yml
         cp build/$(basename `pwd`).pbw "$out/${name}.pbw"
+        strip-nondeterminism --type zip "$out/${name}.pbw"
         ${builtins.concatStringsSep "\n" (map (path: "cp ${path} $out/${path}") screenshotPaths)}
 
       ''
@@ -214,7 +232,9 @@ pkgsCross.gccStdenv.mkDerivation (
       + ''
 
         cd $out
-        tar czf appstore-bundle.tar.gz *
+        tar --owner=0 --group=0 --numeric-owner --format=gnu \
+            --sort=name --mtime="@0" \
+            -czf appstore-bundle.tar.gz *
       '';
   }
   // (removeAttrs rest [
