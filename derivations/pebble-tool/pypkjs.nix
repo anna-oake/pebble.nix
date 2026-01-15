@@ -32,7 +32,7 @@ let
           }).${stdenv.hostPlatform.system};
         hash =
           ({
-            x86_64-linux = "sha256-wkqkIVxk231n/GxCwNdzHKvPMAWWv5yCaudPQm/jt3E=";
+            x86_64-linux = "sha256-g0uXYbt/SdqLiHhHx2R0laLPbEX2niEkrg4/AkSTvBU=";
             x86_64-darwin = "sha256-/CuVa/ryNTHEkIRe232A/JmP6K7hx88TNzF9rgEWkwc=";
             aarch64-darwin = "sha256-bLXodRruJIfMO18h6sbUWQQacYCneZQbZNtXNuJydu4=";
           }).${stdenv.hostPlatform.system};
