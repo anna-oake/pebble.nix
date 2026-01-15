@@ -1,5 +1,5 @@
 {
-  mkShell,
+  mkShellNoCC,
   lib,
   nodejs,
   pebble-qemu,
@@ -28,7 +28,7 @@ let
     "CFLAGS"
   ];
 in
-mkShell (
+mkShellNoCC (
   {
     name = "pebble-env";
     packages = [
