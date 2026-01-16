@@ -55,6 +55,36 @@
           buildPebbleApp = import ./buildTools/buildPebbleApp.nix {
             inherit pkgs;
           };
+
+          mkAppInstallPbw =
+            {
+              pbwPackage,
+              emulatorTarget ? "emery",
+              withLogs ? true,
+            }:
+            {
+              type = "app";
+              program =
+                let
+                  args =
+                    (lib.optional (emulatorTarget != "") "--emulator ${emulatorTarget}")
+                    ++ lib.optional withLogs "--logs";
+                  installApp = pkgs.writeShellApplication {
+                    name = "install-${pbwPackage.pname}";
+                    runtimeInputs = [
+                      pkgs.pebble-qemu
+                    ];
+                    runtimeEnv = {
+                      PEBBLE_SDKS_PATH = pkgs.pebble-sdk;
+                    };
+                    text = ''
+                      set -euo pipefail
+                      exec ${pkgs.pebble-tool}/bin/pebble install "${pbwPackage}/${pbwPackage.pname}.pbw" ${lib.concatStringsSep " " args} "$@"
+                    '';
+                  };
+                in
+                "${installApp}/bin/install-${pbwPackage.pname}";
+            };
         }
       )
     )
