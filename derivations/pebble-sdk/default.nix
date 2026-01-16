@@ -24,7 +24,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ pythonEnv ];
 
   postUnpack = ''
-    TIMESTAMP=0
+    TIMESTAMP=1700578963
 
     find "source" -name '._*' -type f -delete
 
