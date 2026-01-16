@@ -1,6 +1,11 @@
-# pebble.nix
+# this is a fork!
 
-[![CI status badge](https://github.com/pebble-dev/pebble.nix/actions/workflows/buildAndCache.yml/badge.svg)](https://github.com/pebble-dev/pebble.nix/actions/workflows/buildAndCache.yml?query=branch%3Amain)
+This is a fork of [pebble-dev/pebble.nix](https://github.com/pebble-dev/pebble.nix).
+
+I've made lots of opinionated changes and dropped a lot of stuff I found unnecessary for my use case.
+If you want some stability and support, please check out the original repository.
+
+# pebble.nix
 
 A collection of tools for setting up Pebble app development environments, and building Pebble apps/watchfaces, using
 [Nix](https://nixos.org/).

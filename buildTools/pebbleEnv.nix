@@ -1,11 +1,7 @@
 {
   mkShellNoCC,
   lib,
-  nodejs,
-  pebble-qemu,
-  pebble-tool,
-  gcc-arm-embedded-13,
-  pebble-sdk,
+  pkgs,
 }:
 {
   devServerIP ? "",
@@ -13,7 +9,6 @@
   cloudPebble ? false,
   nativeBuildInputs ? [ ],
   packages ? [ ],
-  CFLAGS ? "",
   ...
 }@attrs:
 let
@@ -30,26 +25,28 @@ in
 mkShellNoCC (
   {
     name = "pebble-env";
-    packages = [
-      nodejs
-      pebble-qemu
-      pebble-tool
-      gcc-arm-embedded-13
-    ]
-    ++ packages
-    ++ nativeBuildInputs;
+    packages =
+      with pkgs;
+      [
+        nodejs
+        pebble-qemu
+        pebble-tool
+        gcc-arm-embedded-13
+        pdc-sequencer
+        pdc_tool
+      ]
+      ++ packages
+      ++ nativeBuildInputs;
 
     env = {
-      CFLAGS =
-        "-Wno-error=builtin-macro-redefined -Wno-error=builtin-declaration-mismatch -include sys/types.h "
-        + CFLAGS;
+      CFLAGS = "-Wno-error=builtin-macro-redefined -Wno-error=builtin-declaration-mismatch -include sys/types.h";
       PEBBLE_PHONE = devServerIP;
       PEBBLE_EMULATOR = emulatorTarget;
       PEBBLE_CLOUDPEBBLE = if cloudPebble then "1" else "";
       PEBBLE_EXTRA_PATH = lib.makeBinPath [
-        pebble-qemu
+        pkgs.pebble-qemu
       ];
-      PEBBLE_SDKS_PATH = pebble-sdk;
+      PEBBLE_SDKS_PATH = pkgs.pebble-sdk;
     };
   }
   // rest

@@ -13,7 +13,7 @@ let
   );
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "pebble-sdk-core-bin";
+  pname = "pebble-sdk";
   version = "4.9.77";
 
   src = fetchTarball {
@@ -51,5 +51,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     ln -s "${nodeEnv}/lib/node_modules" "$SDK_PATH/node_modules"
     ln -s "${pythonEnv}" "$SDK_PATH/.venv"
+
+    ln -s $SDK_PATH "$out/${finalAttrs.version}"
   '';
 })

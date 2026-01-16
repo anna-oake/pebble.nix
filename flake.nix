@@ -12,58 +12,56 @@
       ...
     }:
     let
-      systems = [
+      lib = nixpkgs.lib;
+      derivationsDir = ./derivations;
+      derivationNames = lib.attrNames (
+        lib.filterAttrs (_: type: type == "directory") (builtins.readDir derivationsDir)
+      );
+      eachSystem =
+        systems: f:
+        let
+          perSystem = lib.genAttrs systems f;
+          addSystem = system: attrs: lib.mapAttrs (_: v: { ${system} = v; }) attrs;
+        in
+        lib.foldl' lib.recursiveUpdate { } (lib.mapAttrsToList addSystem perSystem);
+    in
+    (eachSystem
+      [
         "x86_64-linux"
         "x86_64-darwin"
         "aarch64-darwin"
-      ];
-      forAllSystems = nixpkgs.lib.genAttrs systems;
-    in
-    forAllSystems (
-      system:
-      let
-        config = {
-          permittedInsecurePackages = [
-            "python-2.7.18.12"
-            "python-2.7.18.12-env"
-          ];
-        };
-        pkgs = import nixpkgs {
-          inherit system config;
-          overlays = [ self.overlays.default ];
-        };
-      in
-      rec {
-        pebbleEnv = pkgs.callPackage ./buildTools/pebbleEnv.nix { };
+      ]
+      (
+        system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            config = {
+              permittedInsecurePackages = [
+                "python-2.7.18.12"
+                "python-2.7.18.12-env"
+              ];
+            };
+            overlays = [ self.overlays.default ];
+          };
+          packages = lib.genAttrs derivationNames (name: pkgs.${name});
+        in
+        {
+          inherit packages;
+          checks = packages;
 
-        buildPebbleApp = import ./buildTools/buildPebbleApp.nix {
-          inherit pkgs nixpkgs system;
-          pebble-tool = packages.pebble-tool;
+          pebbleEnv = pkgs.callPackage ./buildTools/pebbleEnv.nix { };
 
-        };
-        packages = {
-          inherit (pkgs)
-            pdc-sequencer
-            pdc_tool
-            pebble-qemu
-            pebble-tool
-            pypkjs
-            pebble-sdk
-            ;
-        };
-
-        checks = packages;
-      }
+          buildPebbleApp = import ./buildTools/buildPebbleApp.nix {
+            inherit pkgs;
+          };
+        }
+      )
     )
     // {
-      overlays.default = final: prev: {
-        pdc-sequencer = final.callPackage ./derivations/pdc-sequencer.nix { };
-        pdc_tool = final.callPackage ./derivations/pdc_tool.nix { };
-        pebble-qemu = final.callPackage ./derivations/pebble-qemu { };
-        pebble-tool = final.callPackage ./derivations/pebble-tool { };
-        pypkjs = final.callPackage ./derivations/pebble-tool/pypkjs.nix { };
-        pebble-sdk = final.callPackage ./derivations/pebble-sdk { };
-      };
+      overlays.default =
+        final: prev:
+        lib.genAttrs derivationNames (name: final.callPackage (derivationsDir + "/${name}") { });
 
       templates = rec {
         basic = {
@@ -72,8 +70,8 @@
           welcomeText = ''
             # Next Steps
             - Check out the Pebble Developer docs: https://developer.rebble.io
-            - See what else pebble.nix can do: https://github.com/pebble-dev/pebble.nix
-            - Join us in the Rebble Discord server, and get help writing Pebble apps in #app-dev: https://discordapp.com/invite/aRUAYFN
+            - See what else pebble.nix can do: https://github.com/anna-oake/pebble.nix
+            - Join the Rebble Discord server, and get help writing Pebble apps in #app-dev: https://discordapp.com/invite/aRUAYFN
           '';
         };
 

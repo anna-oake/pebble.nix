@@ -3,7 +3,6 @@
   lib,
   fetchFromGitHub,
 }:
-
 buildGoModule {
   pname = "pdc-sequencer";
   version = "1";

@@ -1,0 +1,41 @@
+--- a/pebble_tool/sdk/emulator.py
++++ b/pebble_tool/sdk/emulator.py
+@@ -247,8 +247,7 @@ class ManagedEmulatorTransport(WebsocketTransport):
+ 
+     def _spawn_qemu(self):
+         qemu_bin = os.environ.get('PEBBLE_QEMU_PATH', 'qemu-pebble')
+-        qemu_micro_flash = os.path.join(sdk_manager.path_for_sdk(self.version), 'pebble', self.platform, 'qemu',
+-                                        "qemu_micro_flash.bin")
++        qemu_micro_flash = self._get_micro_path()
+         qemu_spi_flash = self._get_spi_path()
+ 
+         for path in (qemu_micro_flash, qemu_spi_flash):
+@@ -376,6 +375,28 @@ class ManagedEmulatorTransport(WebsocketTransport):
+                             break
+                         to_file.write(data)
+ 
++    def _copy_micro_image(self, path):
++        sdk_qemu_micro_flash = os.path.join(sdk_path(), 'pebble', self.platform, 'qemu', 'qemu_micro_flash.bin')
++        if not os.path.exists(sdk_qemu_micro_flash):
++            raise MissingEmulatorError("Your SDK does not support the Pebble Emulator.")
++        else:
++            try:
++                os.makedirs(os.path.dirname(path))
++            except OSError as e:
++                if e.errno != errno.EEXIST:
++                    raise
++
++            shutil.copy(sdk_qemu_micro_flash, path)
++            os.chmod(path, 0o600)
++
++    def _get_micro_path(self):
++        platform = self.platform
++
++        path = os.path.join(get_sdk_persist_dir(platform, self.version), 'qemu_micro_flash.bin')
++        if not os.path.exists(path):
++            self._copy_micro_image(path)
++        return path
++
+     def _get_spi_path(self):
+         platform = self.platform
+ 

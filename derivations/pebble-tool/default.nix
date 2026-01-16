@@ -95,6 +95,10 @@ python3Packages.buildPythonPackage rec {
     cobs
   ];
 
+  patches = [
+    ./copy-micro-flash.patch
+  ];
+
   postPatch = ''
     substituteInPlace pyproject.toml --replace "rsa>=4.9.1" "rsa>=4.9"
 

@@ -17,7 +17,6 @@
   apple-sdk_15,
   xorg,
 }:
-
 let
   darwinDeps = lib.optional stdenv.isDarwin apple-sdk_15;
   x11Deps = lib.optionals stdenv.isLinux (

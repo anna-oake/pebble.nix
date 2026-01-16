@@ -1,25 +1,15 @@
 {
   pkgs,
-  nixpkgs,
-  pebble-tool,
-  system,
 }:
 {
   name,
   version,
   src,
   nativeBuildInputs ? [ ],
-  postUnpack ? "",
   CFLAGS ? "",
   ...
 }@rest:
-let
-  pkgsCross = import nixpkgs {
-    inherit system;
-    crossSystem = nixpkgs.lib.systems.examples.arm-embedded;
-  };
-in
-pkgsCross.gccStdenv.mkDerivation (
+pkgs.pkgsCross.arm-embedded.gccStdenv.mkDerivation (
   {
     pname = builtins.replaceStrings [ " " ] [ "-" ] name;
     inherit version;
@@ -39,23 +29,14 @@ pkgsCross.gccStdenv.mkDerivation (
         ];
       };
 
-    nativeBuildInputs = [
-      pebble-tool
-      pkgs.strip-nondeterminism
-      pkgs.lndir
-    ]
-    ++ nativeBuildInputs;
-
-    postUnpack = ''
-      export PEBBLE_SDKS_PATH="${pkgs.pebble-sdk}"
-
-      # writable paths
-      export HOME=`pwd`/home-dir
-      TMPDIR="$PWD/tmp"
-      mkdir -p "$TMPDIR"
-      export PEBBLE_SDK_TMP_PATH="$TMPDIR/pebble-sdk"
-    ''
-    + postUnpack;
+    nativeBuildInputs =
+      with pkgs;
+      [
+        pebble-tool
+        strip-nondeterminism
+        gcc-arm-embedded-13
+      ]
+      ++ nativeBuildInputs;
 
     CFLAGS =
       "-Wno-error=builtin-macro-redefined -Wno-error=builtin-declaration-mismatch -include sys/types.h "
@@ -64,6 +45,14 @@ pkgsCross.gccStdenv.mkDerivation (
     LDFLAGS = "-Wl,--build-id=none";
 
     buildPhase = ''
+      export PEBBLE_SDKS_PATH="${pkgs.pebble-sdk}"
+
+      # writable paths
+      export HOME=`pwd`/home-dir
+      TMPDIR="$PWD/tmp"
+      mkdir -p "$TMPDIR"
+      export PEBBLE_SDK_TMP_PATH="$TMPDIR/pebble-sdk"
+
       pebble clean
       pebble build
     '';
