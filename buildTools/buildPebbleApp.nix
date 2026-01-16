@@ -48,7 +48,6 @@ let
   };
 
   stringNotEmpty = str: builtins.isString str && str != "";
-  pathInSrc = path: builtins.pathExists (src + path);
 
   metaYaml =
     with pkgs.lib;
@@ -138,7 +137,20 @@ pkgsCross.gccStdenv.mkDerivation (
     pname = builtins.replaceStrings [ " " ] [ "-" ] name;
     inherit version;
 
-    inherit src;
+    src =
+      let
+        fs = pkgs.lib.fileset;
+        root = src;
+      in
+      fs.toSource {
+        inherit root;
+        fileset = fs.unions [
+          (root + "/src")
+          (root + "/package.json")
+          (fs.maybeMissing (root + "/wscript"))
+          (fs.maybeMissing (root + "/resources"))
+        ];
+      };
 
     nativeBuildInputs = [
       pebble-tool
