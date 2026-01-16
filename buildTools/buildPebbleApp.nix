@@ -13,7 +13,6 @@
   CFLAGS ? "",
   ...
 }@rest:
-
 let
   pkgsCross = import nixpkgs {
     inherit system;

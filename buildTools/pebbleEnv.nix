@@ -4,9 +4,8 @@
   nodejs,
   pebble-qemu,
   pebble-tool,
-  pebble-toolchain-bin,
+  gcc-arm-embedded,
 }:
-
 {
   devServerIP ? "",
   emulatorTarget ? "",
@@ -16,9 +15,8 @@
   CFLAGS ? "",
   ...
 }@attrs:
-
 let
-  rest = builtins.removeAttrs attrs [
+  rest = removeAttrs attrs [
     "cloudPebble"
     "devServerIP"
     "emulatorTarget"
@@ -35,7 +33,7 @@ mkShellNoCC (
       nodejs
       pebble-qemu
       pebble-tool
-      pebble-toolchain-bin
+      gcc-arm-embedded
     ]
     ++ packages
     ++ nativeBuildInputs;
@@ -47,7 +45,6 @@ mkShellNoCC (
       PEBBLE_CLOUDPEBBLE = if cloudPebble then "1" else "";
       PEBBLE_EXTRA_PATH = lib.makeBinPath [
         pebble-qemu
-        pebble-toolchain-bin
       ];
     };
   }

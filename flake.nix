@@ -38,28 +38,23 @@
         };
         packages = {
           inherit (pkgs)
-            arm-embedded-toolchain
             pdc-sequencer
             pdc_tool
             pebble-qemu
             pebble-tool
-            pebble-toolchain-bin
             pypkjs
             ;
         };
 
-        checks = removeAttrs packages [ "arm-embedded-toolchain" ];
+        checks = packages;
       }
     )
     // {
       overlays.default = final: prev: {
-        arm-embedded-toolchain = final.callPackage ./derivations/arm-embedded-toolchain { };
-        boost153 = final.callPackage ./derivations/boost153 { };
         pdc-sequencer = final.callPackage ./derivations/pdc-sequencer.nix { };
         pdc_tool = final.callPackage ./derivations/pdc_tool.nix { };
         pebble-qemu = final.callPackage ./derivations/pebble-qemu { };
         pebble-tool = final.callPackage ./derivations/pebble-tool { };
-        pebble-toolchain-bin = final.callPackage ./derivations/pebble-toolchain-bin.nix { };
         pypkjs = final.callPackage ./derivations/pebble-tool/pypkjs.nix { };
       };
 
