@@ -18,22 +18,6 @@ let
     inherit system;
     crossSystem = nixpkgs.lib.systems.examples.arm-embedded;
   };
-
-  nodeEnv = (pkgs.callPackage ./nodeEnv { }).nodeDependencies;
-  pythonEnv = pkgs.python3.withPackages (
-    ps: with ps; [
-      freetype-py
-      sh
-      pypng
-    ]
-  );
-
-  sdkVersion = "4.9.77";
-
-  pebble-sdk = fetchTarball {
-    url = "https://sdk.core.store/releases/${sdkVersion}/sdk-core.tar.gz";
-    sha256 = "0l1gxd9aian6xbpgx64px7pps3215sn1jamav9hjmd86civws2q4";
-  };
 in
 pkgsCross.gccStdenv.mkDerivation (
   {
@@ -57,52 +41,19 @@ pkgsCross.gccStdenv.mkDerivation (
 
     nativeBuildInputs = [
       pebble-tool
-      pythonEnv
-      pkgs.nodejs
       pkgs.strip-nondeterminism
+      pkgs.lndir
     ]
     ++ nativeBuildInputs;
 
     postUnpack = ''
-      # Setup Pebble SDK
+      export PEBBLE_SDKS_PATH="${pkgs.pebble-sdk}"
+
+      # writable paths
       export HOME=`pwd`/home-dir
-      SDK_VER="${sdkVersion}"
-
-      # canonical location (Linux-style)
-      PERSIST="$HOME/.pebble-sdk"
-      SDK_ROOT="$PERSIST/SDKs/$SDK_VER"
-
-      mkdir -p "$SDK_ROOT/sdk-core"
-      cp -r ${pebble-sdk}/sdk-core "$SDK_ROOT/"
-
-      ln -sfn ${pythonEnv} "$SDK_ROOT/.venv"
-      ln -sfn ${nodeEnv}/lib/node_modules "$SDK_ROOT/node_modules"
-
-      ln -sfn "$SDK_ROOT" "$PERSIST/SDKs/current"
-
-      # Darwin
-      mkdir -p "$HOME/Library/Application Support"
-      ln -sfn "$PERSIST" "$HOME/Library/Application Support/Pebble SDK"
-
-      chmod -R u+w "$HOME"
-
-      export TMPDIR="$PWD/tmp"
+      TMPDIR="$PWD/tmp"
       mkdir -p "$TMPDIR"
-      export PEBBLE_SDK_TMP_LINK="$TMPDIR/pebble-sdk"
-
-      TIMESTAMP=0
-
-      substituteInPlace "$SDK_ROOT/sdk-core/pebble/common/tools/inject_metadata.py" \
-        --replace-fail "'timestamp' : timestamp," "'timestamp' : $TIMESTAMP," \
-        --replace-fail "RESOURCE_TIMESTAMP_ADDR, '<L', timestamp)" "RESOURCE_TIMESTAMP_ADDR, '<L', $TIMESTAMP)"
-
-      substituteInPlace "$SDK_ROOT/sdk-core/pebble/common/tools/mkbundle.py" \
-        --replace-fail "generated_at = int(time.time())" "generated_at = $TIMESTAMP" \
-        --replace-fail "socket.gethostname()" "'nix'" \
-        --replace-fail "'timestamp' : firmware_timestamp" "'timestamp' : $TIMESTAMP" \
-        --replace-fail "'timestamp' : resources_timestamp" "'timestamp' : $TIMESTAMP" \
-        --replace-fail "'timestamp': app_timestamp" "'timestamp': $TIMESTAMP" \
-        --replace-fail "'timestamp': worker_timestamp" "'timestamp': $TIMESTAMP"
+      export PEBBLE_SDK_TMP_PATH="$TMPDIR/pebble-sdk"
     ''
     + postUnpack;
 

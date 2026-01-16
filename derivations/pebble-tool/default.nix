@@ -8,7 +8,6 @@
   python3Packages,
   zlib,
 }:
-
 let
   rpath = lib.makeLibraryPath [
     freetype
@@ -100,8 +99,14 @@ python3Packages.buildPythonPackage rec {
     substituteInPlace pyproject.toml --replace "rsa>=4.9.1" "rsa>=4.9"
 
     substituteInPlace pebble_tool/sdk/__init__.py \
-      --replace 'tmp_link = "/var/tmp/pebble-sdk"' \
-                'tmp_link = os.environ.get("PEBBLE_SDK_TMP_LINK", "/var/tmp/pebble-sdk")'
+        --replace-fail \
+        'tmp_link = "/var/tmp/pebble-sdk"' \
+        'tmp_link = os.environ.get("PEBBLE_SDK_TMP_PATH", "/var/tmp/pebble-sdk")'
+
+    substituteInPlace pebble_tool/sdk/__init__.py \
+        --replace-fail \
+        'sdk_manager = SDKManager()' \
+        'sdk_manager = SDKManager(os.environ.get("PEBBLE_SDKS_PATH"))'
   '';
 
   postFixup = ''

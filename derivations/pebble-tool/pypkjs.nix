@@ -8,7 +8,6 @@
   makeWrapper,
   zlib,
 }:
-
 let
   stpyv8 = python3Packages.buildPythonPackage rec {
     pname = "stpyv8";

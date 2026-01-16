@@ -43,6 +43,7 @@
             pebble-qemu
             pebble-tool
             pypkjs
+            pebble-sdk
             ;
         };
 
@@ -56,6 +57,7 @@
         pebble-qemu = final.callPackage ./derivations/pebble-qemu { };
         pebble-tool = final.callPackage ./derivations/pebble-tool { };
         pypkjs = final.callPackage ./derivations/pebble-tool/pypkjs.nix { };
+        pebble-sdk = final.callPackage ./derivations/pebble-sdk { };
       };
 
       templates = rec {
