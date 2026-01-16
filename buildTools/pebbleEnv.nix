@@ -43,6 +43,9 @@ mkShellNoCC (
       PEBBLE_EMULATOR = emulatorTarget;
       PEBBLE_CLOUDPEBBLE = if cloudPebble then "1" else "";
       PEBBLE_SDKS_PATH = pkgs.pebble-sdk;
+      PEBBLE_EXTRA_PATH = lib.makeBinPath [
+        pkgs.pebble-qemu
+      ];
     };
   }
   // rest
