@@ -55,7 +55,7 @@ let
     ];
   };
 in
-python3Packages.buildPythonPackage rec {
+python3Packages.buildPythonApplication rec {
   pname = "pebble-tool";
   version = "5.0.21";
 
@@ -70,7 +70,7 @@ python3Packages.buildPythonPackage rec {
 
   buildInputs = [ nodejs ];
 
-  propagatedBuildInputs = with python3Packages; [
+  dependencies = with python3Packages; [
     pypkjs
     colorama
     httplib2
@@ -113,12 +113,12 @@ python3Packages.buildPythonPackage rec {
         'sdk_manager = SDKManager(os.environ.get("PEBBLE_SDKS_PATH"))'
   '';
 
-  postFixup = ''
-    wrapProgram $out/bin/pebble \
-      --prefix PATH : ${lib.makeBinPath [ nodejs ]} \
-      --prefix LD_LIBRARY_PATH : ${rpath} \
-      --prefix DYLD_LIBRARY_PATH : ${rpath}
-  '';
+  makeWrapperArgs = [
+    "--prefix PATH : ${lib.makeBinPath [ nodejs ]}"
+    "--prefix PYTHONPATH : \"$PYTHONPATH\""
+    "--prefix LD_LIBRARY_PATH : ${rpath}"
+    "--prefix DYLD_LIBRARY_PATH : ${rpath}"
+  ];
 
   format = "pyproject";
 

@@ -28,7 +28,6 @@ mkShellNoCC (
     packages =
       with pkgs;
       [
-        nodejs
         pebble-qemu
         pebble-tool
         gcc-arm-embedded-13
@@ -43,9 +42,6 @@ mkShellNoCC (
       PEBBLE_PHONE = devServerIP;
       PEBBLE_EMULATOR = emulatorTarget;
       PEBBLE_CLOUDPEBBLE = if cloudPebble then "1" else "";
-      PEBBLE_EXTRA_PATH = lib.makeBinPath [
-        pkgs.pebble-qemu
-      ];
       PEBBLE_SDKS_PATH = pkgs.pebble-sdk;
     };
   }
