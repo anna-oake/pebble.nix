@@ -1,0 +1,14 @@
+--- a/tools/generate_native_sdk/parse_c_decl.py
++++ b/tools/generate_native_sdk/parse_c_decl.py
+@@ -95,7 +95,10 @@
+            kind == clang.cindex.CursorKind.TYPEDEF_DECL
+ 
+ def get_node_spelling(node):
+-    return clang.cindex.conf.lib.clang_getCursorSpelling(node)
++    spelling = node.spelling
++    if isinstance(spelling, str):
++        return spelling
++    return str(spelling)
+ 
+ def get_comment_range(node):
+     source_range = clang.cindex.conf.lib.clang_Cursor_getCommentRange(node)

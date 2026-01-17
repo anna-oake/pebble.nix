@@ -1,3 +1,4 @@
+.DS_Store
 .envrc
 .direnv
 .pre-commit-config.yaml
