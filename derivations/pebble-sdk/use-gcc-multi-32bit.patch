@@ -1,0 +1,15 @@
+diff --git a/wscript b/wscript
+--- a/wscript
++++ b/wscript
+@@ -660,7 +660,11 @@
+     # Copy 'local' to serve as the basis for '32bit':
+     env_32bit = conf.env.derive().detach()
+     env_32bit.append_value('CFLAGS', '-m32')
+     env_32bit.append_value('LINKFLAGS', '-m32')
++    env_32bit.append_value('CFLAGS', '-O2')
++    env_32bit.append_value('CFLAGS', '-Wno-error=stringop-truncation')
++    env_32bit.CC = 'gcc'
++    env_32bit.CXX = 'g++'
+     env_32bit.LINK_CC = 'gcc'
+     conf.all_envs['32bit'] = env_32bit
+     conf.set_env(prev_env)

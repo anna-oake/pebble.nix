@@ -1,0 +1,27 @@
+diff --git a/third_party/jerryscript/wscript b/third_party/jerryscript/wscript
+--- a/third_party/jerryscript/wscript
++++ b/third_party/jerryscript/wscript
+@@ -1,3 +1,5 @@
++import os
++
+ from waflib.ConfigSet import ConfigSet
+ from waflib import Context, Errors, Task, TaskGen
+ 
+@@ -136,11 +138,12 @@
+         src_node = bld.path.find_node('jerryscript/js_tooling/{}'.format(resource))
+         bld(rule='cp ${SRC} ${TGT}', source=src_node, target=src_node.get_bld(), env=env)
+ 
+-    bld(rule='${NPM} install .',
+-        source=[output_node, bld.path.get_bld().make_node('jerryscript/js_tooling/package.json')],
+-        target=bld.path.get_bld().make_node('jerryscript/js_tooling/node_modules/'),
+-        cwd=bld.path.get_bld().find_node('jerryscript/js_tooling/').abspath(),
+-        env=env)
++    if not os.environ.get('PEBBLE_SKIP_NPM_INSTALL'):
++        bld(rule='${NPM} install .',
++            source=[output_node, bld.path.get_bld().make_node('jerryscript/js_tooling/package.json')],
++            target=bld.path.get_bld().make_node('jerryscript/js_tooling/node_modules/'),
++            cwd=bld.path.get_bld().find_node('jerryscript/js_tooling/').abspath(),
++            env=env)
+ 
+ 
+ def configure(conf):
