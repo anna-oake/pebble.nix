@@ -45,6 +45,7 @@ mkShellNoCC (
       PEBBLE_SDKS_PATH = pkgs.pebble-sdk;
       PEBBLE_EXTRA_PATH = lib.makeBinPath [
         pkgs.pebble-qemu
+        pkgs.gcc-arm-embedded-13
       ];
     };
   }
