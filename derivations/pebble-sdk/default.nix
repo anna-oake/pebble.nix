@@ -88,13 +88,13 @@ in
 assert lib.asserts.assertMsg (!withAplite) "aplite is not supported yet";
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "pebble-sdk";
-  version = "4.9.109";
+  version = "4.9.116";
 
   src = fetchFromGitHub {
     owner = "coredevices";
     repo = "PebbleOS";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-5uI4cPRY8PfbP1GKmvQ16RJty0RWXCZHIRbCTim+kKc=";
+    hash = "sha256-ZWh8vIJ+y97z2jz8dtsuE7cJAwjRuORt7jhLCOvVGh4=";
     fetchSubmodules = true;
   };
 
