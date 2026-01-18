@@ -1,0 +1,14 @@
+--- a/waftools/pebble_arm_gcc.py
++++ b/waftools/pebble_arm_gcc.py
+@@ -178,6 +178,11 @@
+ 
+     conf.env.ASFLAGS = [ '-xassembler-with-cpp', '-c' ]
+     conf.env.AS_TGT_F = '-o'
++    debug_prefix_flags = [
++        '-Wa,--debug-prefix-map=%s=/source' % conf.path.abspath(),
++        '-Wa,--debug-prefix-map=%s=/build' % conf.bldnode.abspath(),
++    ]
++    conf.env.append_value('ASFLAGS', debug_prefix_flags)
+ 
+     conf.env.append_value('LINKFLAGS', [ '-Wl,--warn-common' ])
+ 
