@@ -1,0 +1,10 @@
+--- a/src/fw/wscript
++++ b/src/fw/wscript
+@@ -390,7 +390,6 @@
+                     '-Wl,-Map=tintin_fw.map',
+                     '-Wl,--gc-sections',
+                     '-Wl,--undefined=uxTopUsedPriority',
+-                    '-Wl,--build-id=sha1',
+                     '-Wl,--sort-section=alignment',
+                     '-nostdlib']
+ 

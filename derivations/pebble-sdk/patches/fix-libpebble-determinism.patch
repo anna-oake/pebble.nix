@@ -1,0 +1,54 @@
+--- a/tools/generate_native_sdk/generate_app_shim.py
++++ b/tools/generate_native_sdk/generate_app_shim.py
+@@ -3,6 +3,7 @@
+ 
+ import os.path
+ import subprocess
++import shutil
+ import tempfile
+ 
+ SHIM_PREAMBLE = """
+@@ -69,12 +70,14 @@
+ class CompilationFailedError(Exception):
+     pass
+ 
+-def build_shim(shim_s, dest_dir):
++def build_shim(shim_s, dest_dir, tmp_dir):
+     shim_a = os.path.join(dest_dir, 'libpebble.a')
+     # Delete any existing archive, otherwise `ar` will append/insert to it:
+     if os.path.exists(shim_a):
+         os.remove(shim_a)
+-    shim_o = tempfile.NamedTemporaryFile(suffix='pebble.o').name
++    shim_o = os.path.join(tmp_dir, 'pebble.o')
++    if os.path.exists(shim_o):
++        os.remove(shim_o)
+     gcc_process = subprocess.Popen(['arm-none-eabi-gcc',
+                                     '-mcpu=cortex-m3',
+                                     '-mthumb',
+@@ -91,7 +94,7 @@
+         raise CompilationFailedError()
+ 
+     ar_process = subprocess.Popen(['arm-none-eabi-ar',
+-                                   'rcs',
++                                   'rcsD',
+                                    shim_a,
+                                    shim_o],
+                                   stdout = subprocess.PIPE,
+@@ -102,9 +105,13 @@
+         raise CompilationFailedError()
+ 
+ def make_app_shim_lib(functions, sdk_lib_dir):
+-    temp_asm_file = tempfile.NamedTemporaryFile(suffix='pbl_shim.s').name
+-    with open(temp_asm_file, 'w') as shim_s:
+-        shim_s.write(gen_shim_asm(functions))
++    tmp_dir = tempfile.mkdtemp(prefix='pebble_shim_')
++    try:
++        temp_asm_file = os.path.join(tmp_dir, 'pbl_shim.s')
++        with open(temp_asm_file, 'w') as shim_s:
++            shim_s.write(gen_shim_asm(functions))
+ 
+-    build_shim(temp_asm_file, sdk_lib_dir)
++        build_shim(temp_asm_file, sdk_lib_dir, tmp_dir)
++    finally:
++        shutil.rmtree(tmp_dir, ignore_errors=True)
+ 

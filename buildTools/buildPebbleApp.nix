@@ -38,9 +38,7 @@ pkgs.pkgsCross.arm-embedded.gccStdenv.mkDerivation (
       ]
       ++ nativeBuildInputs;
 
-    CFLAGS =
-      "-Wno-error=builtin-macro-redefined -Wno-error=builtin-declaration-mismatch -include sys/types.h "
-      + CFLAGS;
+    CFLAGS = "-Wno-error=builtin-macro-redefined -Wno-error=builtin-declaration-mismatch " + CFLAGS;
 
     LDFLAGS = "-Wl,--build-id=none";
 

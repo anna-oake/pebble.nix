@@ -68,7 +68,6 @@ let
       intelhex
       protobuf
       grpcio-tools
-      nanopb
       certifi
       libclang
       packaging
@@ -116,13 +115,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   patches = [
-    ./skip-tool-check.patch
-    ./gitinfo-version.patch
-    ./fix-clang-spelling.patch
-    ./skip-npm-install.patch
+    ./patches/skip-tool-check.patch
+    ./patches/gitinfo-version.patch
+    ./patches/fix-clang-spelling.patch
+    ./patches/skip-npm-install.patch
+    ./patches/fix-libpebble-determinism.patch
+    ./patches/fix-asm-debug-prefix-map.patch
+    ./patches/disable-fw-build-id.patch
   ]
   ++ lib.optionals (stdenvNoCC.hostPlatform.system == "x86_64-linux") [
-    ./use-gcc-multi-32bit.patch
+    ./patches/use-gcc-multi-32bit.patch
   ];
 
   postPatch = ''
@@ -137,13 +139,25 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   preBuild = ''
     export HOME="$TMPDIR"
-    export EM_CACHE="$TMPDIR/emscripten-cache"
-    mkdir -p "$EM_CACHE"
 
     export PEBBLE_GIT_TAG="v${finalAttrs.version}"
     export PEBBLE_GIT_COMMIT="v${finalAttrs.version}"
     export PEBBLE_GIT_TIMESTAMP="1700578963"
     export PEBBLE_SKIP_NPM_INSTALL=1
+
+    export PYTHONDONTWRITEBYTECODE=1
+    export PYTHONHASHSEED=0
+    export PYTHONNOUSERSITE=1
+
+    export EM_CACHE="$TMPDIR/emscripten-cache"
+
+    debug_prefix_map="-ffile-prefix-map=$PWD=/source -fdebug-prefix-map=$PWD=/source -fmacro-prefix-map=$PWD=/source"
+    random_seed="-frandom-seed=pebble-sdk"
+    export CFLAGS="''${CFLAGS:-} $debug_prefix_map $random_seed"
+    export CXXFLAGS="''${CXXFLAGS:-} $debug_prefix_map $random_seed"
+    export LINKFLAGS="''${LINKFLAGS:-} $debug_prefix_map"
+    lto_prefix_map="-Wl,-plugin-opt=-ffile-prefix-map=$PWD=/source -Wl,-plugin-opt=-fdebug-prefix-map=$PWD=/source -Wl,-plugin-opt=-fmacro-prefix-map=$PWD=/source -Wl,-plugin-opt=$random_seed"
+    export LDFLAGS="''${LDFLAGS:-} $lto_prefix_map"
 
     unset CC CXX AR AS OBJCOPY LD RANLIB STRIP
 
@@ -196,6 +210,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       "$requirements" \
       "${finalAttrs.version}" \
       > sdk-core/manifest.json
+
+    find "sdk-core/pebble" -name 'Doxyfile-SDK.auto' -type f \
+      | while read -r file; do
+          substituteInPlace "$file" --replace-fail "$NIX_BUILD_TOP" ""
+        done
   '';
 
   installPhase = ''
