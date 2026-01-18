@@ -42,6 +42,10 @@ let
       hash = "sha256-jzN3bMp7hCCFP6wQ4woXTgOmehczvn7cLqen9TlG7Dc=";
     };
 
+    patches = [
+      ./libpebble2-add-gabbro.patch
+    ];
+
     propagatedBuildInputs = with python3Packages; [
       pyserial
       six
@@ -97,6 +101,7 @@ python3Packages.buildPythonApplication rec {
 
   patches = [
     ./copy-micro-flash.patch
+    ./add-emu-gabbro.patch
   ];
 
   postPatch = ''
