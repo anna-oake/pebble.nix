@@ -153,7 +153,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     export EM_CACHE="$TMPDIR/emscripten-cache"
 
-    debug_prefix_map="-ffile-prefix-map=$PWD=/source -fdebug-prefix-map=$PWD=/source -fmacro-prefix-map=$PWD=/source"
+    toolchain_prefix_map="-ffile-prefix-map=${gcc-arm-embedded-13}=/toolchain -fdebug-prefix-map=${gcc-arm-embedded-13}=/toolchain -fmacro-prefix-map=${gcc-arm-embedded-13}=/toolchain"
+    debug_prefix_map="-ffile-prefix-map=$PWD=/source -fdebug-prefix-map=$PWD=/source -fmacro-prefix-map=$PWD=/source $toolchain_prefix_map"
     random_seed="-frandom-seed=pebble-sdk"
     export CFLAGS="''${CFLAGS:-} $debug_prefix_map $random_seed"
     export CXXFLAGS="''${CXXFLAGS:-} $debug_prefix_map $random_seed"
