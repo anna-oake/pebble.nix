@@ -121,7 +121,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ./patches/skip-npm-install.patch
     ./patches/fix-libpebble-determinism.patch
     ./patches/fix-asm-debug-prefix-map.patch
-    ./patches/disable-fw-build-id.patch
   ]
   ++ lib.optionals (stdenvNoCC.hostPlatform.system == "x86_64-linux") [
     ./patches/use-gcc-multi-32bit.patch
@@ -140,9 +139,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   preBuild = ''
     export HOME="$TMPDIR"
 
+    export SOURCE_DATE_EPOCH="1700578963"
+
     export PEBBLE_GIT_TAG="v${finalAttrs.version}"
     export PEBBLE_GIT_COMMIT="v${finalAttrs.version}"
-    export PEBBLE_GIT_TIMESTAMP="1700578963"
+    export PEBBLE_GIT_TIMESTAMP="$SOURCE_DATE_EPOCH"
     export PEBBLE_SKIP_NPM_INSTALL=1
 
     export PYTHONDONTWRITEBYTECODE=1
