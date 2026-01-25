@@ -129,6 +129,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   postPatch = ''
     substituteInPlace sdk/waf/wscript \
       --replace-fail '"zip/waflib.zip", "w",' '"zip/waflib.zip", "w", strict_timestamps=False,'
+
     patchShebangs waf third_party/jerryscript/jerryscript/js_tooling
   '';
 
@@ -216,6 +217,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       | while read -r file; do
           substituteInPlace "$file" --replace-fail "$NIX_BUILD_TOP" ""
         done
+
+    export TIMESTAMP="1700578963"
+
+    substituteInPlace "sdk-core/pebble/common/tools/inject_metadata.py" \
+    --replace-fail "'timestamp' : timestamp," "'timestamp' : $TIMESTAMP," \
+    --replace-fail "RESOURCE_TIMESTAMP_ADDR, '<L', timestamp)" "RESOURCE_TIMESTAMP_ADDR, '<L', $TIMESTAMP)"
+
+    substituteInPlace "sdk-core/pebble/common/tools/mkbundle.py" \
+    --replace-fail "generated_at = int(time.time())" "generated_at = $TIMESTAMP" \
+    --replace-fail "socket.gethostname()" "'nix'" \
+    --replace-fail "'timestamp' : firmware_timestamp" "'timestamp' : $TIMESTAMP" \
+    --replace-fail "'timestamp' : resources_timestamp" "'timestamp' : $TIMESTAMP" \
+    --replace-fail "'timestamp': app_timestamp" "'timestamp': $TIMESTAMP" \
+    --replace-fail "'timestamp': worker_timestamp" "'timestamp': $TIMESTAMP"
   '';
 
   installPhase = ''
