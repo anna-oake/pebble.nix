@@ -5,7 +5,7 @@
 }:
 {
   devServerIP ? "",
-  emulatorTarget ? "emery",
+  emulatorTarget ? "gabbro",
   cloudPebble ? false,
   nativeBuildInputs ? [ ],
   packages ? [ ],

@@ -59,7 +59,7 @@
           mkAppInstallPbw =
             {
               pbwPackage,
-              emulatorTarget ? "emery",
+              emulatorTarget ? "gabbro",
               withLogs ? true,
             }:
             {
