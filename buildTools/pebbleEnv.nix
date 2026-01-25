@@ -38,7 +38,7 @@ mkShellNoCC (
       ++ nativeBuildInputs;
 
     env = {
-      CFLAGS = "-Wno-error=builtin-macro-redefined -Wno-error=builtin-declaration-mismatch -include sys/types.h";
+      CFLAGS = "-Wno-error=builtin-macro-redefined -Wno-error=builtin-declaration-mismatch";
       PEBBLE_PHONE = devServerIP;
       PEBBLE_EMULATOR = emulatorTarget;
       PEBBLE_CLOUDPEBBLE = if cloudPebble then "1" else "";
