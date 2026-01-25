@@ -9,7 +9,7 @@
   CFLAGS ? "",
   ...
 }@rest:
-pkgs.pkgsCross.arm-embedded.gccStdenv.mkDerivation (
+pkgs.stdenvNoCC.mkDerivation (
   {
     pname = builtins.replaceStrings [ " " ] [ "-" ] name;
     inherit version;
