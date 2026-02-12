@@ -34,17 +34,13 @@ let
 
   libpebble2 = python3Packages.buildPythonPackage {
     pname = "libpebble2";
-    version = "0.0.30";
+    version = "0.0.31";
     src = fetchFromGitHub {
       owner = "pebble-dev";
       repo = "libpebble2";
-      rev = "6d0e8cffca29eb2ed4a876ea87c50df9c31ad3e7";
-      hash = "sha256-jzN3bMp7hCCFP6wQ4woXTgOmehczvn7cLqen9TlG7Dc=";
+      rev = "b7013d01bd6f6d10f7528fcf9557591d5e8cbb3a";
+      hash = "sha256-4waUs0QeMI0dWL5Dk1HwL/5pK2uOfCFyJaK1MuRkuBw=";
     };
-
-    patches = [
-      ./libpebble2-add-gabbro.patch
-    ];
 
     propagatedBuildInputs = with python3Packages; [
       pyserial
@@ -61,13 +57,13 @@ let
 in
 python3Packages.buildPythonApplication rec {
   pname = "pebble-tool";
-  version = "5.0.22";
+  version = "5.0.24";
 
   src = fetchFromGitHub {
     owner = "coredevices";
     repo = "pebble-tool";
     tag = "v${version}";
-    hash = "sha256-wFA9fvznnwci+f2U2o4VXiyXyTEOZZp26Dx6nXG/a+g=";
+    hash = "sha256-B2knFPWjlK7PGEfstZehDWsV4sxTpEPLMajHWRGu3YE=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -101,7 +97,6 @@ python3Packages.buildPythonApplication rec {
 
   patches = [
     ./copy-micro-flash.patch
-    ./add-emu-gabbro.patch
   ];
 
   postPatch = ''
