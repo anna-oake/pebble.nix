@@ -23,12 +23,12 @@
 let
   libpebble2 = python3.pkgs.buildPythonPackage {
     pname = "libpebble2";
-    version = "0.0.30";
+    version = "0.0.31";
     src = fetchFromGitHub {
       owner = "pebble-dev";
       repo = "libpebble2";
-      rev = "6d0e8cffca29eb2ed4a876ea87c50df9c31ad3e7";
-      hash = "sha256-jzN3bMp7hCCFP6wQ4woXTgOmehczvn7cLqen9TlG7Dc=";
+      rev = "b7013d01bd6f6d10f7528fcf9557591d5e8cbb3a";
+      hash = "sha256-4waUs0QeMI0dWL5Dk1HwL/5pK2uOfCFyJaK1MuRkuBw=";
     };
 
     propagatedBuildInputs = with python3.pkgs; [
@@ -88,13 +88,13 @@ in
 assert lib.asserts.assertMsg (!withAplite) "aplite is not supported yet";
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "pebble-sdk";
-  version = "4.9.116";
+  version = "4.9.124";
 
   src = fetchFromGitHub {
     owner = "coredevices";
     repo = "PebbleOS";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-ZWh8vIJ+y97z2jz8dtsuE7cJAwjRuORt7jhLCOvVGh4=";
+    hash = "sha256-EzVMjj17+uLBqee8NgJxRp6giu0RW7wAvGvm5R8V8bw=";
     fetchSubmodules = true;
   };
 
@@ -110,9 +110,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     which
     patchelf
   ]
-  ++ lib.optionals (stdenvNoCC.hostPlatform.system == "x86_64-linux") [
-    pkgs.gcc_multi
-  ];
+  ++ lib.optional stdenvNoCC.isLinux pkgs.gcc_multi
+  ++ lib.optional stdenvNoCC.isDarwin pkgs.gcc;
 
   patches = [
     ./patches/skip-tool-check.patch
@@ -121,9 +120,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ./patches/skip-npm-install.patch
     ./patches/fix-libpebble-determinism.patch
     ./patches/fix-asm-debug-prefix-map.patch
-  ]
-  ++ lib.optionals (stdenvNoCC.hostPlatform.system == "x86_64-linux") [
-    ./patches/use-gcc-multi-32bit.patch
+    ./patches/fix-32bit.patch
+    ./patches/fix-rand32-call.patch
   ];
 
   postPatch = ''
@@ -134,7 +132,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   hardeningDisable = [
-    "zerocallusedregs"
+    "fortify"
   ];
 
   preBuild = ''
