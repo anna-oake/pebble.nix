@@ -4,6 +4,7 @@
   stdenvNoCC,
   fetchFromGitHub,
   gcc-arm-embedded-13,
+  libpebble2,
   llvmPackages,
   python3,
   nodejs,
@@ -25,29 +26,6 @@
   withAplite ? false,
 }:
 let
-  libpebble2 = python3.pkgs.buildPythonPackage {
-    pname = "libpebble2";
-    version = "0.0.31";
-    src = fetchFromGitHub {
-      owner = "pebble-dev";
-      repo = "libpebble2";
-      rev = "b7013d01bd6f6d10f7528fcf9557591d5e8cbb3a";
-      hash = "sha256-4waUs0QeMI0dWL5Dk1HwL/5pK2uOfCFyJaK1MuRkuBw=";
-    };
-
-    propagatedBuildInputs = with python3.pkgs; [
-      pyserial
-      six
-      websocket-client
-    ];
-
-    format = "pyproject";
-
-    build-system = with python3.pkgs; [
-      setuptools
-    ];
-  };
-
   pythonBuildEnv = python3.withPackages (
     ps: with ps; [
       pillow
