@@ -17,6 +17,11 @@
       derivationNames = lib.attrNames (
         lib.filterAttrs (_: type: type == "directory") (builtins.readDir derivationsDir)
       );
+      filterPlatforms =
+        system: attrs:
+        lib.filterAttrs (
+          _: x: if (x.meta.platforms or [ ]) == [ ] then true else lib.elem system x.meta.platforms
+        ) attrs;
       eachSystem =
         systems: f:
         let
@@ -44,7 +49,7 @@
             };
             overlays = [ self.overlays.default ];
           };
-          packages = lib.genAttrs derivationNames (name: pkgs.${name});
+          packages = filterPlatforms system (lib.genAttrs derivationNames (name: pkgs.${name}));
         in
         {
           inherit packages;

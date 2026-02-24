@@ -259,4 +259,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     ln -s $SDK_PATH "$out/${finalAttrs.version}"
   '';
+
+  meta = {
+    platforms = [
+      "x86_64-linux"
+      "aarch64-darwin"
+    ];
+  };
 })
