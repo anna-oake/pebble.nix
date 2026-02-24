@@ -3,7 +3,7 @@
   pkgs,
   stdenvNoCC,
   fetchFromGitHub,
-  gcc-arm-embedded-13,
+  gcc-arm-embedded-14_2r1,
   libpebble2,
   llvmPackages,
   python3,
@@ -81,7 +81,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [
-    gcc-arm-embedded-13
+    gcc-arm-embedded-14_2r1
     llvmPackages.clang
     nodejs
     gettext
@@ -144,7 +144,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     export EM_CACHE="$TMPDIR/emscripten-cache"
     export MACOS_VERSION_MIN="-mmacosx-version-min=10.12"
 
-    toolchain_prefix_map="-ffile-prefix-map=${gcc-arm-embedded-13}=/toolchain -fdebug-prefix-map=${gcc-arm-embedded-13}=/toolchain -fmacro-prefix-map=${gcc-arm-embedded-13}=/toolchain"
+    toolchain_prefix_map="-ffile-prefix-map=${gcc-arm-embedded-14_2r1}=/toolchain -fdebug-prefix-map=${gcc-arm-embedded-14_2r1}=/toolchain -fmacro-prefix-map=${gcc-arm-embedded-14_2r1}=/toolchain"
     debug_prefix_map="-ffile-prefix-map=$PWD=/source -fdebug-prefix-map=$PWD=/source -fmacro-prefix-map=$PWD=/source $toolchain_prefix_map"
     random_seed="-frandom-seed=pebble-sdk"
     warning_compat="-Wno-error=maybe-uninitialized"

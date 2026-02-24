@@ -34,7 +34,7 @@ pkgs.stdenvNoCC.mkDerivation (
       [
         pebble-tool
         strip-nondeterminism
-        gcc-arm-embedded-13
+        gcc-arm-embedded-14_2r1
       ]
       ++ nativeBuildInputs;
 

@@ -30,7 +30,7 @@ mkShellNoCC (
       [
         pebble-qemu
         pebble-tool
-        gcc-arm-embedded-13
+        gcc-arm-embedded-14_2r1
         pdc-sequencer
         pdc_tool
       ]
@@ -45,7 +45,7 @@ mkShellNoCC (
       PEBBLE_SDKS_PATH = pkgs.pebble-sdk;
       PEBBLE_EXTRA_PATH = lib.makeBinPath [
         pkgs.pebble-qemu
-        pkgs.gcc-arm-embedded-13
+        pkgs.gcc-arm-embedded-14_2r1
       ];
     };
   }
