@@ -12,6 +12,10 @@
   nanopb,
   which,
   patchelf,
+  pkg-config,
+  glib,
+  freetype,
+  gtk3,
   withGabbro ? true,
   withEmery ? true,
   withFlint ? true,
@@ -88,20 +92,19 @@ in
 assert lib.asserts.assertMsg (!withAplite) "aplite is not supported yet";
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "pebble-sdk";
-  version = "4.9.124";
+  version = "4.9.127";
 
   src = fetchFromGitHub {
     owner = "coredevices";
     repo = "PebbleOS";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-EzVMjj17+uLBqee8NgJxRp6giu0RW7wAvGvm5R8V8bw=";
+    hash = "sha256-b01mCfF5wcDUY0GTh3X4piUWWzFFpLqWXnX67tt+04U=";
     fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
     gcc-arm-embedded-13
     llvmPackages.clang
-    llvmPackages.lld
     nodejs
     gettext
     emscripten
@@ -110,8 +113,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     which
     patchelf
   ]
-  ++ lib.optional stdenvNoCC.isLinux pkgs.gcc_multi
-  ++ lib.optional stdenvNoCC.isDarwin pkgs.gcc;
+  ++ lib.optionals stdenvNoCC.isLinux [
+    pkg-config
+    glib.dev
+    freetype.dev
+    gtk3.dev
+  ];
 
   patches = [
     ./patches/skip-tool-check.patch
@@ -120,13 +127,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ./patches/skip-npm-install.patch
     ./patches/fix-libpebble-determinism.patch
     ./patches/fix-asm-debug-prefix-map.patch
-    ./patches/fix-32bit.patch
-    ./patches/fix-rand32-call.patch
   ];
 
   postPatch = ''
     substituteInPlace sdk/waf/wscript \
       --replace-fail '"zip/waflib.zip", "w",' '"zip/waflib.zip", "w", strict_timestamps=False,'
+
+    substituteInPlace third_party/moddable/moddable/build/makefiles/mac/tools.mk \
+      --replace-fail "echo '#!/bin/bash\\nDIR=" "printf '#!${pkgs.bash}/bin/bash\\nDIR="
+
+    substituteInPlace third_party/moddable/moddable/build/makefiles/lin/tools.mk \
+      --replace-fail "SHELL = /bin/dash" "SHELL = /bin/sh" \
+      --replace-fail "'#!/bin/bash\\nDIR=" "'#!${pkgs.bash}/bin/bash\\nDIR="
 
     patchShebangs waf third_party/jerryscript/jerryscript/js_tooling
   '';
@@ -150,17 +162,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     export PYTHONNOUSERSITE=1
 
     export EM_CACHE="$TMPDIR/emscripten-cache"
+    export MACOS_VERSION_MIN="-mmacosx-version-min=10.12"
 
     toolchain_prefix_map="-ffile-prefix-map=${gcc-arm-embedded-13}=/toolchain -fdebug-prefix-map=${gcc-arm-embedded-13}=/toolchain -fmacro-prefix-map=${gcc-arm-embedded-13}=/toolchain"
     debug_prefix_map="-ffile-prefix-map=$PWD=/source -fdebug-prefix-map=$PWD=/source -fmacro-prefix-map=$PWD=/source $toolchain_prefix_map"
     random_seed="-frandom-seed=pebble-sdk"
-    export CFLAGS="''${CFLAGS:-} $debug_prefix_map $random_seed"
-    export CXXFLAGS="''${CXXFLAGS:-} $debug_prefix_map $random_seed"
+    warning_compat="-Wno-error=maybe-uninitialized"
+    export CFLAGS="''${CFLAGS:-} $debug_prefix_map $random_seed $warning_compat"
+    export CXXFLAGS="''${CXXFLAGS:-} $debug_prefix_map $random_seed $warning_compat"
     export LINKFLAGS="''${LINKFLAGS:-} $debug_prefix_map"
+
     lto_prefix_map="-Wl,-plugin-opt=-ffile-prefix-map=$PWD=/source -Wl,-plugin-opt=-fdebug-prefix-map=$PWD=/source -Wl,-plugin-opt=-fmacro-prefix-map=$PWD=/source -Wl,-plugin-opt=$random_seed"
     export LDFLAGS="''${LDFLAGS:-} $lto_prefix_map"
 
-    unset CC CXX AR AS OBJCOPY LD RANLIB STRIP
+    unset CC CXX AR AS OBJCOPY LD RANLIB STRIP STRINGS
 
     export NANOPB_GENERATOR="${pythonBuildEnv}/bin/python3 $PWD/third_party/nanopb/nanopb/generator/nanopb_generator.py"
 
@@ -206,6 +221,27 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     mv sdk-core/pebble/use_requirements.json sdk-core/
     mv sdk-core/pebble/requirements.txt sdk-core/
 
+    waf_extras_dir="$(find sdk-core/pebble -type d -path '*/waflib/extras' | head -n 1)"
+    if [ -z "$waf_extras_dir" ]; then
+      echo "Unable to locate waf extras directory in packaged SDK output"
+      exit 1
+    fi
+
+    substituteInPlace "$waf_extras_dir/pebble_sdk.py" \
+      --replace-fail "from waflib import Logs" $'from waflib import Logs\nimport sdk_paths'
+
+    substituteInPlace "$waf_extras_dir/pebble_sdk.py" \
+      --replace-fail "from process_sdk_resources import generate_resources" $'from process_sdk_resources import generate_resources\nimport report_memory_usage'
+
+    substituteInPlace "$waf_extras_dir/pebble_sdk_common.py" \
+      --replace-fail "from waflib.Tools import c,c_preproc" $'from waflib.Tools import c,c_preproc\nimport ldscript,process_bundle,process_headers,process_js,report_memory_usage,xcode_pebble'
+
+    substituteInPlace "$waf_extras_dir/pebble_sdk_lib.py" \
+      --replace-fail "from process_sdk_resources import generate_resources" $'import sdk_paths\nfrom process_sdk_resources import generate_resources'
+
+    substituteInPlace "$waf_extras_dir/process_sdk_resources.py" \
+      --replace-fail "from resources.resource_map import resource_generator" $'from resources.resource_map import resource_generator\nimport resources.resource_map.resource_generator_bitmap\nimport resources.resource_map.resource_generator_font\nimport resources.resource_map.resource_generator_js\nimport resources.resource_map.resource_generator_pbi\nimport resources.resource_map.resource_generator_png\nimport resources.resource_map.resource_generator_raw'
+
     requirements="$(cat sdk-core/use_requirements.json)"
     printf '{\n  "requirements": %s,\n  "version": "%s",\n  "type": "sdk-core",\n  "channel": ""\n}\n' \
       "$requirements" \
@@ -220,16 +256,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     export TIMESTAMP="1700578963"
 
     substituteInPlace "sdk-core/pebble/common/tools/inject_metadata.py" \
-    --replace-fail "'timestamp' : timestamp," "'timestamp' : $TIMESTAMP," \
-    --replace-fail "RESOURCE_TIMESTAMP_ADDR, '<L', timestamp)" "RESOURCE_TIMESTAMP_ADDR, '<L', $TIMESTAMP)"
+    --replace-fail "\"timestamp\": timestamp," "\"timestamp\": $TIMESTAMP," \
+    --replace-fail "RESOURCE_TIMESTAMP_ADDR, \"<L\", timestamp)" "RESOURCE_TIMESTAMP_ADDR, \"<L\", $TIMESTAMP)"
 
     substituteInPlace "sdk-core/pebble/common/tools/mkbundle.py" \
     --replace-fail "generated_at = int(time.time())" "generated_at = $TIMESTAMP" \
     --replace-fail "socket.gethostname()" "'nix'" \
-    --replace-fail "'timestamp' : firmware_timestamp" "'timestamp' : $TIMESTAMP" \
-    --replace-fail "'timestamp' : resources_timestamp" "'timestamp' : $TIMESTAMP" \
-    --replace-fail "'timestamp': app_timestamp" "'timestamp': $TIMESTAMP" \
-    --replace-fail "'timestamp': worker_timestamp" "'timestamp': $TIMESTAMP"
+    --replace-fail "\"timestamp\": firmware_timestamp" "\"timestamp\": $TIMESTAMP" \
+    --replace-fail "\"timestamp\": resources_timestamp" "\"timestamp\": $TIMESTAMP" \
+    --replace-fail "\"timestamp\": app_timestamp" "\"timestamp\": $TIMESTAMP" \
+    --replace-fail "\"timestamp\": worker_timestamp" "\"timestamp\": $TIMESTAMP"
   '';
 
   installPhase = ''

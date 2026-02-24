@@ -1,13 +1,14 @@
 --- a/wscript
 +++ b/wscript
-@@ -673,10 +673,6 @@
+@@ -543,11 +543,6 @@ def configure(conf):
      conf.setenv('stored_apps', base_env)
      conf.recurse('stored_apps')
- 
+
 -    # Confirm that requirements-*.txt and requirements-osx-brew.txt have been satisfied.
 -    import tool_check
 -    tool_check.tool_check()
 -
-     # Warn user not to use Cutts BB build with a Robert screen
-     if conf.options.board == 'cutts_bb':
-         Logs.warn('NOTE: Do not use this build with a C2/Robert display '
+-
+ def _run_remote_suite(ctx, suite):
+     # PEBBLESDK_TEST_ROOT must be defined in order to initiate integration tests
+     try:
