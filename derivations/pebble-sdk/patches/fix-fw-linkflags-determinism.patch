@@ -1,0 +1,13 @@
+--- a/src/fw/wscript
++++ b/src/fw/wscript
+@@ -355,8 +355,9 @@
+                     '-Wl,-Map=tintin_fw.map',
+                     '-Wl,--gc-sections',
+                     '-Wl,--undefined=uxTopUsedPriority',
+-                    '-Wl,--build-id=sha1',
++                    '-Wl,--build-id=0x69206c6f7665206d7920776966652121205e5f5e',
+                     '-Wl,--sort-section=alignment',
++                    '-Wl,--strip-debug',
+                     '-nostdlib']
+ 
+     fw_linkflags.extend(['-Wl,--wrap=malloc',

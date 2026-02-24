@@ -1,0 +1,71 @@
+--- a/third_party/moddable/moddable/xs/tools/xslOpt.c
++++ b/third_party/moddable/moddable/xs/tools/xslOpt.c
+@@ -15,6 +15,7 @@
+ 	txColorEntry* first;
+ 	txColorEntry* last;
+ 	txSlot* instance;
++	txSize index;
+ 	txSize size;
+ };
+ 
+@@ -38,7 +39,7 @@
+ static void fxLinkColorEntry(txColorTable* colorTable, txColorEntry* colorEntry);
+ static void fxLinkConflictEntry(txConflictTable* colorTable, txConflictEntry* colorEntry);
+ static txColorEntry* fxNewColorEntry(txLinker* linker, txSlot* property);
+-static txColorTable* fxNewColorTable(txLinker* linker, txSlot* instance);
++static txColorTable* fxNewColorTable(txLinker* linker, txSlot* instance, txSize index);
+ static txConflictEntry* fxNewConflictEntry(txLinker* linker, txColorTable* colorTable);
+ static txConflictTable* fxNewConflictTable(txLinker* linker, txID id);
+ 
+@@ -46,7 +47,13 @@
+ {
+ 	txColorTable* a = *((txColorTable**)p);
+ 	txColorTable* b = *((txColorTable**)q);
+-	return (b->size) - (a->size);
++	if (b->size != a->size)
++		return (b->size) - (a->size);
++	if (a->index < b->index)
++		return -1;
++	if (a->index > b->index)
++		return 1;
++	return 0;
+ }
+ 
+ int fxCompareConflictTable(const void* p, const void* q)
+@@ -55,7 +62,13 @@
+ 	txConflictTable* b = *((txConflictTable**)q);
+ 	if (a) {
+ 		if (b) {
+-			return b->count - a->count;
++			if (b->count != a->count)
++				return b->count - a->count;
++			if (a->id < b->id)
++				return -1;
++			if (a->id > b->id)
++				return 1;
++			return 0;
+ 		}
+ 		return -1;
+ 	}
+@@ -140,10 +153,11 @@
+ 	return result;
+ }
+ 
+-txColorTable* fxNewColorTable(txLinker* linker, txSlot* instance)
++txColorTable* fxNewColorTable(txLinker* linker, txSlot* instance, txSize index)
+ {
+ 	txColorTable* result = fxNewLinkerChunkClear(linker, sizeof(txColorTable));
+ 	result->instance = instance;
++	result->index = index;
+ 	result->size = 1;
+ 	return result;
+ }
+@@ -197,7 +211,7 @@
+ 		txSlot* limit = heap->value.reference;
+ 		while (slot < limit) {
+ 			if (slot->kind == XS_INSTANCE_KIND) {
+-				txColorTable* colorTable = colorTables[instanceIndex] = fxNewColorTable(linker, slot);
++				txColorTable* colorTable = colorTables[instanceIndex] = fxNewColorTable(linker, slot, instanceIndex);
+ 				txSlot* property = slot->next;
+ 				while (property) {
+ 					if (((property->flag & XS_INTERNAL_FLAG) == 0) && (property->ID != XS_NO_ID)) {

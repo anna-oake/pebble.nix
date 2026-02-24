@@ -127,6 +127,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ./patches/skip-npm-install.patch
     ./patches/fix-libpebble-determinism.patch
     ./patches/fix-asm-debug-prefix-map.patch
+    ./patches/fix-moddable-deterministic-sorts.patch
+    ./patches/fix-fw-linkflags-determinism.patch
   ];
 
   postPatch = ''
